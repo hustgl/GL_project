@@ -12,7 +12,7 @@ In this directory I have uploaded the source codes of my 4 verilog projects and 
 8. apb2spi
 9. ahb2apb
 
-You can refer to this URL:(basic module design spec)[https://note.youdao.com/s/AVQxhfVA] for design specs
+You can refer to this URL: [basic module design spec](https://note.youdao.com/s/AVQxhfVA) for design specs
 
 ## My 4 verilog projects are listed below :
 1. bilinear interpolation RTL implementation
