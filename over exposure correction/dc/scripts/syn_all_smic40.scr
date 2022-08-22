@@ -1,0 +1,278 @@
+set mytop top_oec
+#####################################################
+# library settings
+#####################################################
+
+set STD_SRAM /sensor/SOC/kangm/SOC/GC630B/lib
+set SYN_LIB /sensor/eda/snps/dc/2018/libraries/syn
+
+#set target_library  [list /store/tech_lib/SMIC_40nlp/STD_CELL/arm/smic/logic0040ll/sc9mc_base_lvt_c40/r0p2/db/sc9mc_logic0040ll_base_lvt_c40_ss_typical_max_0p90v_m40c.db 
+
+#set target_library  [list /store/tech_lib/SMIC_40nlp/STD_CELL/m31/M31HDSC710SL040LL/ccs_db/M31HDSC710SL040LL_N40CSS0P9_cmax_ccs.db 
+#set target_library  [list /store/tech_lib/SMIC_40nlp/STD_CELL/m31/M31HDSC710SL040LS/ccs_db/M31HDSC710SL040LS_N40CSS0P9_cmax_ccs.db 
+#set target_library  [list /store/tech_lib/SMIC_40nlp/STD_CELL/arm/smic/logic0040ll/sc9mc_base_rvt_c40/r1p2/db/sc9mc_logic0040ll_base_rvt_c40_ss_typical_max_0p99v_m40c.db 
+set target_library  [list /store/tech_lib/SMIC_40nlp/STD_CELL/arm/smic/logic0040ll/sc9mc_base_lvt_c40/r0p2/db/sc9mc_logic0040ll_base_lvt_c40_ss_typical_max_0p90v_m40c.db \
+${STD_SRAM}/rhdd_672x40x1_m4/rhdd_672x40x1_m4_ss_0p99v_0p99v_m40c.db \
+${STD_SRAM}/rhdd_672x56x1_m4/rhdd_672x56x1_m4_ss_0p99v_0p99v_m40c.db \
+${STD_SRAM}/rhd_1168x8x5_m8/rhd_1168x8x5_m8_ss_0p99v_0p99v_m40c.db \
+${STD_SRAM}/rhd_768x32x1_m4/rhd_768x32x1_m4_ss_0p99v_0p99v_m40c.db \
+${STD_SRAM}/rhd_1024x32x1_m8/rhd_1024x32x1_m8_ss_0p99v_0p99v_m40c.db \
+${STD_SRAM}/rhd_192x112x1_m2/rhd_192x112x1_m2_ss_0p99v_0p99v_m40c.db \
+${STD_SRAM}/rhd_32x128x1_m2/rhd_32x128x1_m2_ss_0p99v_0p99v_m40c.db \
+${STD_SRAM}/rhd_256x48x1_m2/rhd_256x48x1_m2_ss_0p99v_0p99v_m40c.db \
+${STD_SRAM}/rhd_1168x40x1_m8/rhd_1168x40x1_m8_ss_0p90v_0p90v_m40c.db \
+]
+
+set synthetic_library [list  $SYN_LIB/dw_foundation.sldb $SYN_LIB/standard.sldb ]
+set link_library $target_library
+append link_library " " $synthetic_library " " "*"
+
+set enable_page_mode false
+
+set_svf ./svf/${mytop}.svf
+set compile_enable_register_merging false
+set compile_advanced_fix_multiple_port_nets true
+set compile_rewire_multiple_port_nets true
+
+set_host_options -max_cores 8
+
+## dont use
+source ./scripts/smic40_donnot_use.tcl
+#####################################################
+# read rtl
+#####################cortexa5########################
+set SYN_RTL  [list /sensor/public/guol/GL_ISP/OEC_prj/rtl
+             ]
+
+set search_path [ concat $SYN_RTL $search_path]
+
+set rtl_image [list \
+top_oec.v \
+SRAMSP_2336X40X1.v \
+SRAM_MBIST.v \
+array_calc.v \
+array_flow.v \
+array_load.v \
+average3x3.v \
+exp.v \
+expcurve.v \
+imcorw_mixrb_calc.v \
+imo1_calc.v \
+imoy_calc.v \
+imoy_m_calc.v \
+mtmp_calc.v \
+sram_ctrl.v \
+sum90.v \
+tanhcurve.v \
+traverse_mask.v \
+wb_gain.v \
+]
+
+# supress warning message of signed<->unsigned
+suppress_message VER-318
+
+
+define_design_lib work -path work
+sh rm -rf ./work/*
+
+# Tee analyze output to separate log file
+#read_ddc ./db/compile_ultra_GE_TOP.ddc
+#read_ddc ./db/compile_ultra_GAMMA_ADP_Y_QP.ddc
+#read_ddc ./db/compile_ultra_HDR_T14.ddc
+#read_ddc ./db/compile_ultra_INTP_4CELL16_QP.ddc
+#read_ddc ./db/compile_ultra_SNR.ddc
+#read_ddc ./db/compile_ultra_TM_ADP_QP.ddc
+#read_ddc ./db/compile_ultra_YEE.ddc
+#read_ddc ./db/compile_ultra_YUVDN_YDN.ddc
+#read_ddc ./db/compile_ultra_CAF_EDGE.ddc
+
+
+analyze -library work -format verilog $rtl_image
+# Tee elaboration output to separate log file
+elaborate $mytop
+current_design $mytop
+uniquify
+link
+
+
+#set_dont_touch GE_TOP
+#set_dont_touch GAMMA_ADP_Y_QP
+#set_dont_touch [get_designs HDR_T14*]
+#set_dont_touch INTP_4CELL16_QP
+#set_dont_touch [get_designs SNR*]
+#set_dont_touch [get_designs TM_ADP_QP*]
+#set_dont_touch YEE
+#set_dont_touch YUVDN_YDN
+ 
+
+write -h -o ./db/read_rtl.ddc
+
+
+
+
+
+
+
+
+#set subModules [list \
+#CROSS_PD_UP_DW_B12_DW_XY17_DW_DB12 \
+#INTP_4CELL_DW10 \
+#]
+#
+#foreach subModule $subModules {
+#    set mytop $subModule
+#    current_design $mytop 
+#
+#    set_max_area 0
+#    set_max_fanout 20 $mytop
+#    set_max_transition 0.2 $mytop 
+#
+#    set case_analysis_sequential_propagation always 
+#    set case_analysis_propagate_through_icg true
+#    set timing_enable_multiple_clocks_per_reg true
+#
+#    create_clock -p 4.0 [get_ports clk] -name clk
+#    create_clock -p 4.0 [get_ports aclk] -name aclk
+#    set_clock_uncertainty 0.2 -setup [all_clocks]
+#
+#    set_false_path -from [get_ports rst_n]
+#    set_false_path -from [get_ports reg_rst_n]
+#    set_false_path -from [get_ports scan_mode]
+#    set_false_path -from [get_ports MBIST_en*]
+#
+#    set_ideal_network [get_ports clk]
+#    set_ideal_network [get_ports aclk]
+#    set_ideal_network [get_ports rst_n]
+#    set_ideal_network [get_ports reg_rst_n]
+#    set_ideal_network [get_ports scan_mode]
+#    set_ideal_network [get_ports MBIST_en*]
+#
+#    set_input_delay  -max [expr 0.6] [remove_from_collection [all_inputs] [get_port clk]] -clock clk
+#    set_output_delay  -max [expr 1.5] [all_outputs] -clock clk
+#    set_input_delay  -max [expr 0.6] [remove_from_collection [all_inputs] [get_port clk]] -clock aclk
+#    set_output_delay  -max [expr 1.5] [all_outputs] -clock aclk
+#    set_load 0.005 [all_outputs]
+#
+#
+#    change_name -rule verilog -h 
+#    define_name_rule gcore -restrict "\\\[\]"
+#    define_name_rule gcore -remove_internal_net_bus
+#    report_name_rule gcore
+#    change_name -rule gcore  -h 
+#
+#    set CG "{integrated:sc9mc_logic0040ll_base_rvt_c40_ss_typical_max_0p99v_m40c\/PREICG_X4B_A9TR40}"
+#    set_clock_gating_style -minimum_bitwidth 8 -max_fanout 1024 -sequential_cell latch -positive_edge_logic ${CG} -control_point before
+#    set_fix_multiple_port_nets -feedthroughs -buffer -all
+#
+#    compile_ultra -no_autoungroup -no_seq_output_inversion -no_boundary_optimization -gate_clock -scan
+#
+#    write  -h -o ./db/${mytop}_compile_ultra.ddc
+#    report_timing -delay max -max_paths 1000 -nosplit -path full_clock_expanded -nets -transition_time -input_pins > ./rpt/${mytop}timing_max.rpt
+#}
+#
+#
+#
+
+
+
+
+######################################################
+# do the  compile
+######################################################
+# do this can increase the area . using encounter fix multiple_port_nets 
+#set verilogout_no_tri  true
+
+set auto_wire_load_selection true
+#set mytop HDR_TOP
+#current_design $mytop 
+#reset_design
+
+set_max_area 0
+set_max_fanout 24 $mytop
+set_max_transition 0.2 $mytop 
+
+set case_analysis_sequential_propagation always 
+set case_analysis_propagate_through_icg true
+set timing_enable_multiple_clocks_per_reg true
+
+create_clock -p 3.8 [get_ports clk] -name clk
+set_clock_uncertainty 0.2 -setup [all_clocks]
+
+set_false_path -from [get_ports rst_n]
+set_false_path -from [get_ports reg_rst_n]
+set_false_path -from [get_ports scan_mode]
+set_false_path -from [get_ports MBIST_en*]
+
+set_ideal_network [get_ports clk]
+set_ideal_network [get_ports rst_n]
+set_ideal_network [get_ports reg_rst_n]
+set_ideal_network [get_ports scan_mode]
+set_ideal_network [get_ports MBIST_en*]
+
+set_input_delay  -max [expr 0.4] [remove_from_collection [all_inputs] [get_port clk]] -clock clk
+set_output_delay  -max [expr 0.6] [all_outputs] -clock clk
+set_load 0.005 [all_outputs]
+
+
+change_name -rule verilog -h 
+define_name_rule gcore -restrict "\\\[\]"
+define_name_rule gcore -remove_internal_net_bus
+report_name_rule gcore
+change_name -rule gcore  -h 
+
+set CG "{integrated:sc9mc_logic0040ll_base_rvt_c40_ss_typical_max_0p99v_m40c\/PREICG_X4B_A9TR40}"
+set_clock_gating_style -minimum_bitwidth 8 -max_fanout 1024 -sequential_cell latch -positive_edge_logic ${CG} -control_point before
+#set_fix_multiple_port_nets -feedthroughs -buffer -all
+
+compile_ultra -no_autoungroup -no_seq_output_inversion -no_boundary_optimization -gate_clock -scan
+
+write  -h -o ./db/ISP_compile_ultra.ddc
+
+# -----------------------------------------------------------------------------
+# Write final reports
+# -----------------------------------------------------------------------------
+#printvar                        > ./rpt/vars
+
+check_design -multiple_designs   > ./rpt/check_design.rpt
+check_timing                     > ./rpt/check_timing.rpt
+
+report_qor                       > ./rpt/qor.rpt
+report_timing -delay max -max_paths 1000 -nosplit -path full_clock_expanded -nets -transition_time -input_pins \
+                                 > ./rpt/timing_max.rpt
+report_area -hierarchy -physical -designware > ./rpt/area.rpt
+report_power -nosplit            > ./rpt/power.rpt
+
+report_constraint -all_violators -nosplit \
+                                 > ./rpt/constraint_violators.rpt
+#report_constraint -all_violators -verbose \
+#                                 > ./rpt/constraint.rpt
+report_design                    > ./rpt/design.rpt
+report_clocks -attributes -skew  > ./rpt/clocks.rpt
+
+#report_clock_gating -multi_stage -verbose -gated -ungated \
+#                                 > ./rpt/clock_gating.rpt
+#report_clock_tree -summary -settings -structure \
+#                                 > ./rpt/clock_tree.rpt
+query_objects -truncate 0 [all_registers -level_sensitive ] \
+                                 > ./rpt/latches.rpt
+report_isolate_ports -nosplit    > ./rpt/isolate_ports.rpt
+report_net_fanout -threshold 32  > ./rpt/high_fanout_nets.rpt
+report_port -verbose -nosplit    > ./rpt/port.rpt
+report_hierarchy                 > ./rpt/hierarchy.rpt
+report_resources -hierarchy      > ./rpt/resources.rpt
+
+report_compile_options           > ./rpt/compile_options.rpt
+#report_congestion                > ./rpt/congestion.rpt
+
+# Zero interconnect delay mode to investigate potential design/floorplan problems
+set_zero_interconnect_delay_mode true
+
+report_timing -delay max -path full_clock_expanded -max_paths 10 -nets -transition_time -input_pins -nosplit \
+                                 > ./rpt/zero_interconnect_timing.rpt
+
+report_qor                       > ./rpt/zero_interconnect_qor.rpt
+set_zero_interconnect_delay_mode false
+
+
+
+
