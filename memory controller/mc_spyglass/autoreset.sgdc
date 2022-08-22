@@ -1,0 +1,3 @@
+current_design "mc_top"
+reset -name "mc_top.rst_n"      -value 0
+reset -name "mc_top.apb_prstn"  -value 0

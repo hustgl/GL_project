@@ -1,0 +1,40 @@
+#!SPYGLASS_PROJECT_FILE
+#!VERSION 3.0
+#  -------------------------------------------------------------------
+#  This is a software generated project file. Manual edits to this file could be lost during the next save operation
+#  Copyright Synopsys Inc.
+#  Last Updated By: SpyGlass SpyGlass_vL-2016.06
+#  Last Updated On Wed Jun  8 03:58:36 2022
+#
+#  -------------------------------------------------------------------
+
+##Data Import Section
+
+read_file -type sgdc autoclock.sgdc
+read_file -type sgdc autoreset.sgdc
+read_file -type verilog ../mc_rtl/array_ctrl.v
+read_file -type verilog ../mc_rtl/array_if_sel.v
+read_file -type verilog ../mc_rtl/array_rd_ctrl.v
+read_file -type verilog ../mc_rtl/array_rf_ctrl.v
+read_file -type verilog ../mc_rtl/array_wr_ctrl.v
+read_file -type verilog ../mc_rtl/async_fifo.v
+read_file -type verilog ../mc_rtl/axi_slave.v
+read_file -type verilog ../mc_rtl/dualport_ram_async.v
+read_file -type verilog ../mc_rtl/fsm_ctrl.v
+read_file -type verilog ../mc_rtl/mc_apb_cfg.v
+read_file -type verilog ../mc_rtl/mc_top.v
+read_file -type verilog ../mc_rtl/sync_fifo.v
+
+##Common Options Section
+
+set_option projectwdir .
+set_option language_mode mixed
+set_option designread_enable_synthesis no
+set_option designread_disable_flatten no
+set_option active_methodology $SPYGLASS_HOME/GuideWare/latest/block/rtl_handoff
+
+
+##Goal Setup Section
+
+current_methodology $SPYGLASS_HOME/GuideWare/latest/block/rtl_handoff
+
